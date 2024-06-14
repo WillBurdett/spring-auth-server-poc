@@ -1,0 +1,21 @@
+server:
+  port: 8080
+logging:
+  level:
+    org:
+      springframework:
+        security: trace
+
+spring:
+  jpa:
+    hibernate.ddl-auto
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    initialization-mode: always
+  sql:
+    init:
+      mode: always
+
+
