@@ -3,6 +3,7 @@ package com.example.authclient;
 import java.util.Map;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,17 +33,39 @@ class GreetingsController {
 	}
 
 	@GetMapping("/")
-	Map<String, String> getGreeting(){
-		return this.service.greet();
+	Map<String, String> getGreetingForAll(){
+		return this.service.greetAll();
 	}
+
+	@GetMapping("/user")
+	Map<String, String> getUserGreeting(){
+		return this.service.greetUser();
+	}
+
+	@GetMapping("/admin")
+	Map<String, String> getAdminGreeting(){
+		return this.service.greetAdmin();
+	}
+
 }
 
 @EnableMethodSecurity
+@Configuration
 @Service
 class GreetingsService {
 
-	@PreAuthorize("hasAuthority('SCOPE_user')")
-	public Map<String, String> greet(){
+	public Map<String, String> greetAll(){
+		return Map.of("Message", "Hello everyone!");
+	}
+
+	@PreAuthorize("hasAuthority('SCOPE_user.read')")
+	public Map<String, String> greetUser(){
+		var jwt = (DefaultOidcUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		return Map.of("Message", "Hello " + jwt.getSubject());
+	}
+
+	@PreAuthorize("hasAuthority('SCOPE_admin.read')")
+	public Map<String, String> greetAdmin(){
 		var jwt = (DefaultOidcUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		return Map.of("Message", "Hello " + jwt.getSubject());
 	}

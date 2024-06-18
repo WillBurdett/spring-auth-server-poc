@@ -1,5 +1,6 @@
 package com.example.authserver;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import javax.sql.DataSource;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -36,22 +38,30 @@ public class AuthserverApplication {
 }
 
 @Configuration
-class UserConfiguration{
+class UserConfiguration {
 
 	@Bean
-	JdbcUserDetailsManager jdbcUserDetailsManager(DataSource dataSource){
+	JdbcUserDetailsManager jdbcUserDetailsManager(DataSource dataSource) {
 		return new JdbcUserDetailsManager(dataSource);
 	}
 
 	@Bean
-	ApplicationRunner usersRunner(PasswordEncoder passwordEncoder, UserDetailsManager userDetailsManager){
+	ApplicationRunner usersRunner(PasswordEncoder passwordEncoder, UserDetailsManager userDetailsManager) {
 		return args -> {
 			var one =
-					User.builder().roles("ADMIN", "USER").username("admin").password("pw").passwordEncoder(passwordEncoder::encode).build();
+					User.builder().roles("ADMIN", "USER").username("admin").password("pw")
+							.passwordEncoder(passwordEncoder::encode).build();
 			var two =
 					User.builder().roles("USER").username("user").password("pw").passwordEncoder(passwordEncoder::encode).build();
-			userDetailsManager.createUser(one);
-			userDetailsManager.createUser(two);
+
+			List<UserDetails> userDetails = List.of(one, two);
+
+			for (UserDetails u :
+					userDetails) {
+				if (!userDetailsManager.userExists(u.getUsername())) {
+					userDetailsManager.createUser(u);
+				}
+			}
 		};
 	}
 
