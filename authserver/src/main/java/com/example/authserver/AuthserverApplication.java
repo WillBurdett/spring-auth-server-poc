@@ -50,19 +50,12 @@ class UserConfiguration{
 	@Bean
 	ApplicationRunner usersRunner(PasswordEncoder passwordEncoder, UserDetailsManager userDetailsManager){
 		return args -> {
-			var builder = User.builder().roles("USER").passwordEncoder(passwordEncoder::encode);
-			var users = Map.of(
-					"user", "pw",
-					"admin", "pw");
-			users.forEach((username, password) -> {
-				if (!userDetailsManager.userExists(username)){
-					var user = builder
-							.username(username)
-							.password(password)
-							.build();
-					userDetailsManager.createUser(user);
-				}
-			});
+			var one =
+					User.builder().roles("ADMIN", "USER").username("admin").password("pw").passwordEncoder(passwordEncoder::encode).build();
+			var two =
+					User.builder().roles("USER").username("user").password("pw").passwordEncoder(passwordEncoder::encode).build();
+			userDetailsManager.createUser(one);
+			userDetailsManager.createUser(two);
 		};
 	}
 
